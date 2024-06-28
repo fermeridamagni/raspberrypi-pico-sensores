@@ -6,98 +6,21 @@
 # Cuando un sensor de movimiento detecta movimiento, se encienden las luces de la habitación correspondiente.
 # Si no se detecta movimiento, las luces se apagan.
 
-import machine  # Para interactuar con los pines del Raspberry Pi Pico
 import time  # Para introducir pausas en el código
 
-# Configuración de los pines
-pin_sensor_movimiento_cocina = machine.Pin(
-    2, machine.Pin.IN
-)  # Pin 2 como entrada para el sensor de movimiento de la cocina
-pin_sensor_movimiento_sala = machine.Pin(
-    3, machine.Pin.IN
-)  # Pin 3 como entrada para el sensor de movimiento de la sala
-pin_sensor_movimiento_dormitorio = machine.Pin(
-    4, machine.Pin.IN
-)  # Pin 4 como entrada para el sensor de movimiento del dormitorio
-
-pin_luces_cocina = machine.Pin(
-    5, machine.Pin.OUT
-)  # Pin 5 como salida para las luces de la cocina
-pin_luces_sala = machine.Pin(
-    6, machine.Pin.OUT
-)  # Pin 6 como salida para las luces de la sala
-pin_luces_dormitorio = machine.Pin(
-    7, machine.Pin.OUT
-)  # Pin 7 como salida para las luces del dormitorio
-
-
-# Función para encender las luces de una habitación
-def encender_luces(habitacion):
-    if habitacion == "cocina":
-        pin_luces_cocina.value(1)  # Enciende las luces de la cocina
-
-    elif habitacion == "sala":
-        pin_luces_sala.value(1)  # Enciende las luces de la sala
-
-    elif habitacion == "dormitorio":
-        pin_luces_dormitorio.value(1)  # Enciende las luces del dormitorio
-
-
-# Función para apagar las luces de una habitación
-def apagar_luces(habitacion):
-    if habitacion == "cocina":
-        pin_luces_cocina.value(0)  # Apaga las luces de la cocina
-
-    elif habitacion == "sala":
-        pin_luces_sala.value(0)  # Apaga las luces de la sala
-
-    elif habitacion == "dormitorio":
-        pin_luces_dormitorio.value(0)  # Apaga las luces del dormitorio
-
+from controllers.lights import encender_luces, apagar_luces
+from controllers.sensors import detectar_movimiento
 
 # Bucle principal
 while True:
-    if (
-        pin_sensor_movimiento_cocina.value() == 1
-    ):  # Si el sensor de la cocina detecta movimiento
-        encender_luces("cocina")  # Encendemos las luces de la cocina
-        print(
-            "¡Movimiento detectado en la cocina! Luces encendidas."
-        )  # Mostramos un mensaje en la consola
-
+    if (habitacion := detectar_movimiento()) is not None:
+        encender_luces(habitacion)
+        print(f"¡Movimiento detectado en la {habitacion}! Luces encendidas.")
     else:
-        apagar_luces("cocina")  # Apagamos las luces de la cocina
-        print(
-            "Sin movimiento en la cocina. Luces apagadas."
-        )  # Mostramos un mensaje en la consola
-
-    if (
-        pin_sensor_movimiento_sala.value() == 1
-    ):  # Si el sensor de la sala detecta movimiento
-        encender_luces("sala")  # Encendemos las luces de la sala
-        print(
-            "¡Movimiento detectado en la sala! Luces encendidas."
-        )  # Mostramos un mensaje en la consola
-
-    else:
-        apagar_luces("sala")  # Apagamos las luces de la sala
-        print(
-            "Sin movimiento en la sala. Luces apagadas."
-        )  # Mostramos un mensaje en la consola
-
-    if (
-        pin_sensor_movimiento_dormitorio.value() == 1
-    ):  # Si el sensor del dormitorio detecta movimiento
-        encender_luces("dormitorio")  # Encendemos las luces del dormitorio
-        print(
-            "¡Movimiento detectado en el dormitorio! Luces encendidas."
-        )  # Mostramos un mensaje en la consola
-
-    else:
-        apagar_luces("dormitorio")  # Apagamos las luces del dormitorio
-        print(
-            "Sin movimiento en el dormitorio. Luces apagadas."
-        )  # Mostramos un mensaje en la consola
+        apagar_luces("cocina")
+        apagar_luces("sala")
+        apagar_luces("dormitorio")
+        print("Sin movimiento en ninguna habitación. Luces apagadas.")
 
     time.sleep(
         1
